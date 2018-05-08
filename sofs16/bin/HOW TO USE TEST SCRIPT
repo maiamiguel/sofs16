@@ -1,0 +1,112 @@
+VERSION 1.0
+
+HOW TO USE:
+
+
+	First time use or every time you change the test functions:
+		-	chmod +x test.sh (first time only)
+		-	Always execute in dir bin
+		-	./test.sh	(every functions are changed or PC is rebooted)
+		-	source test.sh	(every functions are changed or PC is rebooted)
+
+
+	Test functions
+		1 - createdisk:
+			Description: 	Create disk in /tmp with name zzz and a certain amount of blocks	(./createDisk)
+			Arguments:		[number of blocks]
+			Example:		createDisk 1000
+
+		2 - formatDisk_bin:
+			Description:	Format disk using the mksofs_bin module 		(developed by the teacher)
+			Options:		-n name --- set volume name (default: \"SOFS15\")
+           					-i num  --- set number of inodes (default: N/8, where N = number of blocks)
+           					-c num  --- set number of blocks per cluster (default: 2, min: 1, max: 8)
+           					-z      --- set zero mode (default: not zero)
+           					-q      --- set quiet mode (default: not quiet)
+           					-h      --- print this help
+           		Example:		formatDisk_bin -z -c 1 -i 100
+
+        3 - formatDisk:
+        	Description:	Format disk using the mksofs module
+			Options:		-n name --- set volume name (default: \"SOFS15\")
+           					-i num  --- set number of inodes (default: N/8, where N = number of blocks)
+           					-c num  --- set number of blocks per cluster (default: 2, min: 1, max: 8)
+           					-z      --- set zero mode (default: not zero)
+           					-q      --- set quiet mode (default: not quiet)
+           					-h      --- print this help
+           		Example:		formatDisk -z -c 1 -i 100
+
+        4 - showBlock:		
+        	Description:	Show the specified block. Used to see superblock, inodes entries, clsuter references, direntries	(./showBlock)
+			Options:	    -x range   --- show block(s) as hexadecimal data
+				            -a range   --- show block(s) as ascii/hexadecimal data
+				            -s range   --- show block(s) as superblock data
+				            -i range   --- show block(s) as inode entries
+				            -d range   --- show block(s) as directory entries
+				            -r range   --- show block(s) as cluster references
+				            -h         --- print this help
+			Example:		showBlock -s 0
+							showBlock -c 14-20
+
+		5 - allocInode:
+			Description:	Allocate a free inode. An inode is retrieved from the list of free inodes, marked in use, associated to the
+							legal file type passed as a parameter and is generally initialized. 
+							It is possible to allocate several inodes at the same time
+			Arguments:		[number of inodes to allocate] [type of inode to be allocated]
+			Example:		allocInode 20 1		-> allocate 20 inodes of type REGULAR FILE
+							allocInode 1 3		-> allocate 1 inode of type SYMLINK
+
+		6 - freeInode:
+			Description:	Free the referenced inode. The inode is inserted into the list of free inodes.
+							It is possibe to free several inodes at the same time
+			Arguments:		[list of inodes to be freed]
+			Example:		freeInode 3 4 5 6 9 2	-> inodes 2, 3, 4, 5, 6 and 9 will be freed
+
+		7 - allocCluster:
+			Description:	Allocate a free cluster. A cluster is retrieved from the list of free clusters.
+							It is possible to allocate several cluster at the same time.
+			Arguments:		[number of clusters to allocate]
+			Example:		allocCluster 30			-> allocates 30 clusters
+
+		8 - freeCluster:
+			Description:	Free the referenced cluster. The cluster is inserted into the list of free clusters.
+							It is possibe to free several clusters at the same time
+			Arguments:		[list of clusters to be freed]
+			Example:		freeCluster 3 4 5 6 9 2	-> clusters 2, 3, 4, 5, 6 and 9 will be freed
+
+		9 - replenish:
+			Description:	Replenish the head cache. If the head cache is empty, it is filled with references retrieved from the references 
+							head cluster or from the tail cache.
+			Arguments:		-- no arguments
+
+		10 - deplete:
+			Description:	Deplete the tail cache. The references in the tail cache are transferred to the head cache or to the reference 
+							tail cluster.
+			Arguments:		-- no arguments
+
+		11 - allocFilecluster:
+			Description:	Associate a cluster to a given file cluster position.
+							The test associates all the file cluster index to specified value
+			Arguments:		[inode number] [File cluster index]
+			Example:		allocFilecluster 1 350	-> for inode 1 allocates the first 350 file cluster indexes (runs the function 350 times)
+		
+		12 - freeFilecluster
+			Description:	Free all file clusters from the given position on.
+			Arguments:		[inode number] [File cluster index]
+			Example:		freeFilecluster 1 200	-> for inode 1 all clusters from file cluster index 200 on
+
+		13 - addDirentry:
+			Description:	Add a new entry to the parent directory. A direntry is added connecting the parent inode to the child inode. The 
+							refcount of the child inode is not incremented by this function.
+							It is possible to add several Direntries at the same time.
+							There is no need to allocate inodes before. The name of the direntries will be A followed by the chid inode 
+							number
+			Arguments:		[parent inode number][number of direntries to be added + 1]
+			Example:		addDirentry 1 16	-> at inode 1 add 15 direntries of type directory (A2, ... ,A16)
+
+		14 - delDirentry:
+			Description:	Remove an entry from a parent directory. A direntry associated from the given directory is deleted. The refcount
+							of the child inode is not decremented by this function.
+							It is possible to delete several Direntries at the same time.
+			Arguments:		[parent inode number][number of direntries to be deleted + 1]
+			Example:		delDirentry 1 16	-> at inode 1 delete 15 direntries (A2, ... , A16)
